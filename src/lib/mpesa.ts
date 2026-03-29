@@ -20,11 +20,11 @@ export class MpesaService {
   private callbackUrl: string
 
   constructor() {
-    this.consumerKey = process.env.MPESA_CONSUMER_KEY!
-    this.consumerSecret = process.env.MPESA_CONSUMER_SECRET!
-    this.passkey = process.env.MPESA_PASSKEY!
-    this.shortcode = process.env.MPESA_SHORTCODE!
-    this.callbackUrl = process.env.MPESA_CALLBACK_URL!
+    this.consumerKey = process.env.MPESA_CONSUMER_KEY || 'test_consumer_key'
+    this.consumerSecret = process.env.MPESA_CONSUMER_SECRET || 'test_consumer_secret'
+    this.passkey = process.env.MPESA_PASSKEY || 'test_passkey'
+    this.shortcode = process.env.MPESA_SHORTCODE || 'test_shortcode'
+    this.callbackUrl = process.env.MPESA_CALLBACK_URL || 'http://localhost:3000/api/mpesa/callback'
   }
 
   private async getAccessToken(): Promise<string> {

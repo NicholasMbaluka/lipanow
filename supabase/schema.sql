@@ -1,4 +1,4 @@
--- Businesses table
+-- Businesses table (one row per business owner)
 CREATE TABLE businesses (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -13,7 +13,7 @@ CREATE TABLE businesses (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Transactions table
+-- Transactions table (every payment a customer makes)
 CREATE TABLE transactions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
@@ -22,33 +22,36 @@ CREATE TABLE transactions (
   customer_phone TEXT,
   mpesa_receipt TEXT,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'failed')),
+  checkout_request_id TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Billing records table (for future use)
-CREATE TABLE billing_records (
+-- Billing requests table (every time a business pays you KES 799)
+CREATE TABLE billing_requests (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
-  amount BIGINT NOT NULL, -- in cents
+  amount BIGINT NOT NULL DEFAULT 79900, -- KES 799 in cents
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'failed')),
+  mpesa_receipt TEXT,
   billing_period_start TIMESTAMP WITH TIME ZONE,
   billing_period_end TIMESTAMP WITH TIME ZONE,
-  mpesa_receipt TEXT,
+  checkout_request_id TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Admin users table
-CREATE TABLE admin_users (
+-- Admins table (just you - one row)
+CREATE TABLE admins (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Row Level Security
 ALTER TABLE businesses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE billing_records ENABLE ROW LEVEL SECURITY;
-ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE billing_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
 
 -- Businesses policies
 CREATE POLICY "Businesses can view own business" ON businesses
@@ -64,7 +67,7 @@ CREATE POLICY "Businesses can insert own business" ON businesses
 CREATE POLICY "Admins can view all businesses" ON businesses
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM admin_users WHERE admin_users.user_id = auth.uid()
+      SELECT 1 FROM admins WHERE admins.user_id = auth.uid()
     )
   );
 
@@ -79,22 +82,30 @@ CREATE POLICY "Businesses can view own transactions" ON transactions
 CREATE POLICY "Admins can view all transactions" ON transactions
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM admin_users WHERE admin_users.user_id = auth.uid()
+      SELECT 1 FROM admins WHERE admins.user_id = auth.uid()
     )
   );
 
--- Billing records policies
-CREATE POLICY "Businesses can view own billing" ON billing_records
+-- Billing requests policies
+CREATE POLICY "Businesses can view own billing" ON billing_requests
   FOR SELECT USING (
     business_id IN (
       SELECT id FROM businesses WHERE user_id = auth.uid()
     )
   );
 
-CREATE POLICY "Admins can view all billing" ON billing_records
+CREATE POLICY "Admins can view all billing" ON billing_requests
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM admin_users WHERE admin_users.user_id = auth.uid()
+      SELECT 1 FROM admins WHERE admins.user_id = auth.uid()
+    )
+  );
+
+-- Admins policies
+CREATE POLICY "Admins can manage admins" ON admins
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM admins WHERE admins.user_id = auth.uid()
     )
   );
 
@@ -130,4 +141,5 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE INDEX idx_businesses_slug ON businesses(slug);
 CREATE INDEX idx_transactions_business_id ON transactions(business_id);
 CREATE INDEX idx_transactions_created_at ON transactions(created_at);
-CREATE INDEX idx_billing_records_business_id ON billing_records(business_id);
+CREATE INDEX idx_billing_requests_business_id ON billing_requests(business_id);
+CREATE INDEX idx_admins_user_id ON admins(user_id);
