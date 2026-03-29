@@ -127,4 +127,4 @@ src/
 
 ---
 
-Built with ❤️ for Kenyan businesses
+Built with vibes and popcorn 
