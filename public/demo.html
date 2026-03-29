@@ -1,0 +1,406 @@
+
+<!DOCTYPE html>
+<html>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans, sans-serif); background: var(--color-background-tertiary); min-height: 100vh; }
+
+.nav { background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); padding: 0 1.5rem; height: 52px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.logo { font-size: 16px; font-weight: 500; color: #1D9E75; letter-spacing: -0.3px; }
+.nav-tabs { display: flex; gap: 4px; }
+.tab { padding: 6px 14px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; border: none; background: transparent; color: var(--color-text-secondary); transition: all 0.15s; }
+.tab.active { background: var(--color-background-secondary); color: var(--color-text-primary); font-weight: 500; }
+.tab:hover:not(.active) { background: var(--color-background-secondary); }
+
+.screen { display: none; padding: 2rem 1.5rem; max-width: 480px; margin: 0 auto; }
+.screen.active { display: block; }
+
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.5rem; margin-bottom: 1rem; }
+
+.label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; display: block; font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; }
+input, select { width: 100%; margin-bottom: 14px; font-size: 14px; }
+.btn { width: 100%; padding: 12px; background: #1D9E75; color: white; border: none; border-radius: var(--border-radius-md); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn:hover { background: #0F6E56; }
+.btn-outline { background: transparent; color: #1D9E75; border: 1px solid #1D9E75; margin-top: 8px; }
+.btn-outline:hover { background: #E1F5EE; }
+
+.hero { text-align: center; padding: 2rem 0 1.5rem; }
+.hero h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 8px; }
+.hero p { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; }
+
+.badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+.badge-green { background: #E1F5EE; color: #0F6E56; }
+.badge-amber { background: #FAEEDA; color: #854F0B; }
+
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; }
+.metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.metric-sub { font-size: 11px; color: #1D9E75; margin-top: 2px; }
+
+.tx-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.tx-row:last-child { border-bottom: none; }
+.tx-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.tx-time { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.tx-amount { font-size: 14px; font-weight: 500; color: #1D9E75; }
+
+.pay-biz { text-align: center; padding: 1.5rem 0 1rem; }
+.pay-logo { width: 60px; height: 60px; background: #E1F5EE; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 500; color: #1D9E75; }
+.pay-name { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+.pay-till { font-size: 13px; color: var(--color-text-secondary); }
+
+.amount-display { text-align: center; font-size: 36px; font-weight: 500; color: var(--color-text-primary); padding: 1rem 0; letter-spacing: -1px; }
+.amount-display span { font-size: 18px; color: var(--color-text-secondary); }
+
+.pin-dots { display: flex; justify-content: center; gap: 12px; padding: 1rem 0; }
+.pin-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--color-border-tertiary); transition: background 0.2s; }
+.pin-dot.filled { background: #1D9E75; }
+
+.success-screen { text-align: center; padding: 2rem 0; }
+.success-icon { width: 64px; height: 64px; background: #E1F5EE; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; }
+.checkmark { width: 28px; height: 28px; stroke: #1D9E75; stroke-width: 2.5; fill: none; }
+
+.step-indicator { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border-tertiary); }
+.step-dot.active { background: #1D9E75; }
+.step-dot.done { background: #5DCAA5; }
+
+.divider { text-align: center; font-size: 12px; color: var(--color-text-secondary); margin: 1rem 0; position: relative; }
+.divider::before { content: ''; position: absolute; left: 0; top: 50%; width: 40%; height: 0.5px; background: var(--color-border-tertiary); }
+.divider::after { content: ''; position: absolute; right: 0; top: 50%; width: 40%; height: 0.5px; background: var(--color-border-tertiary); }
+
+.qr-box { width: 100px; height: 100px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; }
+
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 1rem; }
+.numpad-key { padding: 14px; background: var(--color-background-secondary); border: none; border-radius: var(--border-radius-md); font-size: 18px; font-weight: 500; cursor: pointer; color: var(--color-text-primary); transition: all 0.1s; }
+.numpad-key:active { transform: scale(0.95); background: var(--color-border-tertiary); }
+
+.link-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; color: #1D9E75; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.copy-btn { font-size: 11px; color: var(--color-text-secondary); cursor: pointer; padding: 4px 8px; border-radius: 4px; border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); }
+
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #085041; color: white; padding: 10px 20px; border-radius: var(--border-radius-md); font-size: 13px; opacity: 0; transition: opacity 0.3s; z-index: 99; pointer-events: none; }
+.toast.show { opacity: 1; }
+</style>
+
+<div class="nav">
+  <div class="logo">LipaNow</div>
+  <div class="nav-tabs">
+    <button class="tab active" onclick="switchTab('signup')">Signup</button>
+    <button class="tab" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab" onclick="switchTab('payment')">Pay Page</button>
+  </div>
+</div>
+
+<div id="signup" class="screen active">
+  <div class="hero">
+    <div style="margin-bottom:12px"><span class="badge badge-green">Free to start</span></div>
+    <h1>Get your M-Pesa payment page</h1>
+    <p>Professional payment page for your business in 2 minutes. Share a link, get paid instantly.</p>
+  </div>
+
+  <div class="card">
+    <div id="step1">
+      <div class="step-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+      <label class="label">Business name</label>
+      <input type="text" id="bizName" placeholder="e.g. Mama Ngina's Boutique" />
+      <label class="label">Phone number</label>
+      <input type="tel" id="bizPhone" placeholder="+254 7XX XXX XXX" />
+      <label class="label">Business type</label>
+      <select id="bizType">
+        <option value="">Select type...</option>
+        <option>Retail shop</option>
+        <option>Salon / Barber</option>
+        <option>Restaurant / Cafe</option>
+        <option>Tutor / Teacher</option>
+        <option>Other</option>
+      </select>
+      <button class="btn" onclick="step2()">Continue</button>
+    </div>
+
+    <div id="step2" style="display:none">
+      <div class="step-indicator">
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+      </div>
+      <label class="label">M-Pesa till / paybill number</label>
+      <input type="text" id="tillNo" placeholder="e.g. 522522" />
+      <label class="label">Choose your plan</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div id="planFree" onclick="selectPlan('free')" style="border:2px solid #1D9E75;border-radius:var(--border-radius-md);padding:12px;cursor:pointer;text-align:center">
+          <div style="font-weight:500;font-size:14px">Free</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px">50 tx/month</div>
+          <div style="font-size:18px;font-weight:500;margin-top:6px;color:#1D9E75">KES 0</div>
+        </div>
+        <div id="planPro" onclick="selectPlan('pro')" style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;cursor:pointer;text-align:center;position:relative">
+          <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#1D9E75;color:white;font-size:10px;padding:2px 8px;border-radius:99px">Popular</div>
+          <div style="font-weight:500;font-size:14px">Pro</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px">Unlimited + branding</div>
+          <div style="font-size:18px;font-weight:500;margin-top:6px;color:#1D9E75">KES 799</div>
+        </div>
+      </div>
+      <button class="btn" onclick="step3()">Create my page</button>
+    </div>
+
+    <div id="step3" style="display:none">
+      <div class="step-indicator">
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+      </div>
+      <div style="text-align:center;padding:1rem 0">
+        <div style="width:56px;height:56px;background:#E1F5EE;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div style="font-size:16px;font-weight:500;margin-bottom:6px">Your page is ready!</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px">Share this link with your customers</div>
+        <div class="link-box">
+          <span>lipanow.co.ke/shop/<strong id="bizSlug">mama-nginas</strong></span>
+          <span class="copy-btn" onclick="copyLink()">Copy</span>
+        </div>
+        <div class="qr-box">
+          <svg width="70" height="70" viewBox="0 0 70 70"><rect x="5" y="5" width="18" height="18" rx="2" fill="none" stroke="var(--color-text-secondary)" stroke-width="2"/><rect x="9" y="9" width="10" height="10" fill="var(--color-text-secondary)"/><rect x="47" y="5" width="18" height="18" rx="2" fill="none" stroke="var(--color-text-secondary)" stroke-width="2"/><rect x="51" y="9" width="10" height="10" fill="var(--color-text-secondary)"/><rect x="5" y="47" width="18" height="18" rx="2" fill="none" stroke="var(--color-text-secondary)" stroke-width="2"/><rect x="9" y="51" width="10" height="10" fill="var(--color-text-secondary)"/><rect x="30" y="5" width="5" height="5" fill="var(--color-text-secondary)"/><rect x="38" y="5" width="5" height="5" fill="var(--color-text-secondary)"/><rect x="30" y="13" width="5" height="5" fill="var(--color-text-secondary)"/><rect x="47" y="30" width="5" height="5" fill="var(--color-text-secondary)"/><rect x="55" y="30" width="5" height="5" fill="var(--color-text-secondary)"/><rect x="30" y="30" width="5" height="5" fill="var(--color-text-secondary)"/><rect x="30" y="38" width="14" height="5" fill="var(--color-text-secondary)"/><rect x="47" y="47" width="18" height="5" fill="var(--color-text-secondary)"/><rect x="47" y="55" width="5" height="10" fill="var(--color-text-secondary)"/><rect x="60" y="55" width="5" height="10" fill="var(--color-text-secondary)"/></svg>
+        </div>
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:16px">Download QR code to print or share</div>
+      </div>
+      <button class="btn" onclick="switchTab('dashboard')">View my dashboard</button>
+      <button class="btn btn-outline" onclick="switchTab('payment')">Preview my pay page</button>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:12px;color:var(--color-text-secondary);padding-bottom:2rem">
+    No credit card needed &bull; Runs on M-Pesa Daraja API &bull; Cancel anytime
+  </div>
+</div>
+
+<div id="dashboard" class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+    <div>
+      <div style="font-size:18px;font-weight:500">Good morning, Mama Ngina</div>
+      <div style="font-size:13px;color:var(--color-text-secondary)">Sunday, 29 March 2026</div>
+    </div>
+    <span class="badge badge-green">Pro</span>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric">
+      <div class="metric-label">Today's earnings</div>
+      <div class="metric-value">KES 4,350</div>
+      <div class="metric-sub">+12% vs yesterday</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">This month</div>
+      <div class="metric-value">KES 62,400</div>
+      <div class="metric-sub">31 days left</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Transactions</div>
+      <div class="metric-value">128</div>
+      <div class="metric-sub">today: 8</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Avg. payment</div>
+      <div class="metric-value">KES 488</div>
+      <div class="metric-sub">this month</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:500">Recent payments</div>
+      <span style="font-size:12px;color:#1D9E75;cursor:pointer">View all</span>
+    </div>
+    <div class="tx-row">
+      <div>
+        <div class="tx-name">John Kamau</div>
+        <div class="tx-time">Today, 10:42 AM &bull; <span class="badge badge-green" style="font-size:10px">confirmed</span></div>
+      </div>
+      <div class="tx-amount">+KES 850</div>
+    </div>
+    <div class="tx-row">
+      <div>
+        <div class="tx-name">Wanjiku M.</div>
+        <div class="tx-time">Today, 9:15 AM &bull; <span class="badge badge-green" style="font-size:10px">confirmed</span></div>
+      </div>
+      <div class="tx-amount">+KES 1,200</div>
+    </div>
+    <div class="tx-row">
+      <div>
+        <div class="tx-name">Peter Otieno</div>
+        <div class="tx-time">Today, 8:03 AM &bull; <span class="badge badge-green" style="font-size:10px">confirmed</span></div>
+      </div>
+      <div class="tx-amount">+KES 450</div>
+    </div>
+    <div class="tx-row">
+      <div>
+        <div class="tx-name">Grace Njeri</div>
+        <div class="tx-time">Yesterday, 6:30 PM &bull; <span class="badge badge-green" style="font-size:10px">confirmed</span></div>
+      </div>
+      <div class="tx-amount">+KES 1,850</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:14px;font-weight:500;margin-bottom:12px">Your payment link</div>
+    <div class="link-box">
+      <span>lipanow.co.ke/shop/mama-nginas</span>
+      <span class="copy-btn" onclick="copyLink()">Copy</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn" style="font-size:12px;padding:9px">Share on WhatsApp</button>
+      <button class="btn btn-outline" style="font-size:12px;padding:9px" onclick="switchTab('payment')">Preview page</button>
+    </div>
+  </div>
+</div>
+
+<div id="payment" class="screen">
+  <div id="pay-enter">
+    <div class="pay-biz">
+      <div class="pay-logo">MN</div>
+      <div class="pay-name">Mama Ngina's Boutique</div>
+      <div class="pay-till">Till No. 522522</div>
+    </div>
+
+    <div class="card">
+      <label class="label">Amount (KES)</label>
+      <div class="amount-display"><span>KES </span><span id="amountVal">0</span></div>
+      <div class="numpad">
+        <button class="numpad-key" onclick="numpad('1')">1</button>
+        <button class="numpad-key" onclick="numpad('2')">2</button>
+        <button class="numpad-key" onclick="numpad('3')">3</button>
+        <button class="numpad-key" onclick="numpad('4')">4</button>
+        <button class="numpad-key" onclick="numpad('5')">5</button>
+        <button class="numpad-key" onclick="numpad('6')">6</button>
+        <button class="numpad-key" onclick="numpad('7')">7</button>
+        <button class="numpad-key" onclick="numpad('8')">8</button>
+        <button class="numpad-key" onclick="numpad('9')">9</button>
+        <button class="numpad-key" onclick="numpad('clear')" style="font-size:13px;color:var(--color-text-secondary)">C</button>
+        <button class="numpad-key" onclick="numpad('0')">0</button>
+        <button class="numpad-key" onclick="numpad('back')" style="font-size:13px">⌫</button>
+      </div>
+      <div style="margin-top:14px">
+        <label class="label">Your name (optional)</label>
+        <input type="text" placeholder="e.g. John Kamau" style="margin-bottom:14px" />
+        <button class="btn" onclick="startPayment()">Pay with M-Pesa</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pay-pin" style="display:none">
+    <div class="card" style="text-align:center;padding:2rem 1.5rem">
+      <div style="font-size:14px;color:var(--color-text-secondary);margin-bottom:4px">Sending STK push to</div>
+      <div style="font-size:16px;font-weight:500;margin-bottom:20px">+254 7** *** 123</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px">Enter your M-Pesa PIN</div>
+      <div class="pin-dots">
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
+        <div class="pin-dot" id="d4"></div>
+      </div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:8px">Check your phone for the M-Pesa prompt</div>
+      <div style="margin-top:20px">
+        <div style="width:36px;height:36px;border:2px solid #E1F5EE;border-top-color:#1D9E75;border-radius:50%;margin:0 auto;animation:spin 0.8s linear infinite"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pay-success" style="display:none">
+    <div class="card success-screen">
+      <div class="success-icon">
+        <svg class="checkmark" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:18px;font-weight:500;margin-bottom:6px">Payment confirmed!</div>
+      <div style="font-size:28px;font-weight:500;color:#1D9E75;margin-bottom:6px">KES <span id="paidAmount">850</span></div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:20px">Paid to Mama Ngina's Boutique</div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;font-size:12px;color:var(--color-text-secondary);margin-bottom:16px">
+        Ref: <strong>QEW7H2K1P9</strong> &bull; Sun 29 Mar 2026, 11:24 AM
+      </div>
+      <button class="btn" onclick="resetPayment()">Make another payment</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Link copied!</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+let amount = '';
+let selectedPlan = 'free';
+
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  const tabs = ['signup','dashboard','payment'];
+  document.querySelectorAll('.tab')[tabs.indexOf(tab)].classList.add('active');
+}
+
+function step2() {
+  const name = document.getElementById('bizName').value.trim();
+  if (!name) { document.getElementById('bizName').focus(); return; }
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'block';
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.getElementById('planFree').style.border = plan === 'free' ? '2px solid #1D9E75' : '0.5px solid var(--color-border-tertiary)';
+  document.getElementById('planPro').style.border = plan === 'pro' ? '2px solid #1D9E75' : '0.5px solid var(--color-border-tertiary)';
+}
+
+function step3() {
+  const name = document.getElementById('bizName').value.trim() || 'My Shop';
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  document.getElementById('bizSlug').textContent = slug;
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('step3').style.display = 'block';
+}
+
+function numpad(key) {
+  if (key === 'clear') { amount = ''; }
+  else if (key === 'back') { amount = amount.slice(0, -1); }
+  else if (amount.length < 6) { amount += key; }
+  document.getElementById('amountVal').textContent = amount ? parseInt(amount).toLocaleString() : '0';
+}
+
+function startPayment() {
+  if (!amount || parseInt(amount) < 1) return;
+  document.getElementById('paidAmount').textContent = parseInt(amount).toLocaleString();
+  document.getElementById('pay-enter').style.display = 'none';
+  document.getElementById('pay-pin').style.display = 'block';
+  let filled = 0;
+  const interval = setInterval(() => {
+    filled++;
+    const dot = document.getElementById('d' + filled);
+    if (dot) dot.classList.add('filled');
+    if (filled >= 4) {
+      clearInterval(interval);
+      setTimeout(() => {
+        document.getElementById('pay-pin').style.display = 'none';
+        document.getElementById('pay-success').style.display = 'block';
+      }, 1200);
+    }
+  }, 600);
+}
+
+function resetPayment() {
+  amount = '';
+  document.getElementById('amountVal').textContent = '0';
+  document.getElementById('pay-success').style.display = 'none';
+  document.getElementById('pay-enter').style.display = 'block';
+  ['d1','d2','d3','d4'].forEach(id => document.getElementById(id).classList.remove('filled'));
+}
+
+function copyLink() {
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+</script>
